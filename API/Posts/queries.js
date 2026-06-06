@@ -39,9 +39,10 @@ const CreatePost = async (title, content, userId) => {
 
 const getPostsByUserId = async (userId) => {
   try {
-    const { rows } = await poo.query("SELECT * FROM posts WHERE user_id = $1", [
-      userId,
-    ]);
+    const { rows } = await pool.query(
+      "SELECT posts.* , users.username FROM posts JOIN users ON posts.userId = users.id WHERE user_id = $1",
+      [userId],
+    );
     return rows;
   } catch (err) {
     console.log(err.message("Error getting posts by user id"));
@@ -53,7 +54,7 @@ const getPostsByTitleOrContent = async (searchQuery) => {
   try {
     // const { searchQuery } = req.query;
     const { rows } = await pool.query(
-      "SELECT posts.*, users.username FROM posts  JOIN users ON posts.userId = users.id       WHERE title ILIKE $1 OR body ILIKE $1"[
+      "SELECT posts.*, users.username FROM posts  JOIN users ON posts.userId = users.id       WHERE posts.title ILIKE $1 OR posts.body ILIKE $1"[
         `%${searchQuery}`
       ],
     );
@@ -66,8 +67,9 @@ const getPostsByTitleOrContent = async (searchQuery) => {
 const getPostsByUsername = async (username) => {
   try {
     const { rows } = await pool.query(
-      "SELECT * FROM posts WHERE username = $1",
-      [username],
+      "SELECT posts.* , users.username FROM posts JOIN users ON posts.userId = users.id WHERE users.username = $1,"[
+        username
+      ],
     );
     if (rows.length === 0) {
       return { message: "No posts found for this username" };
