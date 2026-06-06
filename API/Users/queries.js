@@ -13,11 +13,6 @@ const verifyToken = require("../../Middleware/verifyToken");
 
 const createUser = async (username, email, password, confirmPassword) => {
   try {
-    // check if user already exists
-    // check if username is unique
-    // check if password and confirm password match
-    // hash password and  store in database
-
     const { rows } = await pool.query("SELECT * FROM users WHERE email = $1", [
       email,
     ]);
@@ -29,27 +24,17 @@ const createUser = async (username, email, password, confirmPassword) => {
       return { message: "Passwords do not match" };
     } else {
       const hashedPassword = await bcrypt.hash(password, 10);
+      const newUser = await createUser(username, email, hashedPassword);
+
       await pool.query(
         "INSERT INTO users (username, email, password) VALUES ($1, $2, $3)",
         [username, email, hashedPassword],
       );
-      const user = {
-        username: username,
-        email: email,
-        password: hashedPassword,
-      };
-      jwt.sign(
-        { user },
-        process.env.JWT_SECRET,
-        { expiresIn: "48h" },
-        (err, token) => {
-          if (err) {
-            return { message: "Error generating token" };
-          }
-          return { token, user: { username, email } };
-        },
-      );
-      return { message: "User created successfully" };
+
+      return (newUser = {
+        message: "User created successfully",
+        user: { username, email },
+      });
     }
   } catch (error) {
     return { message: "Server error, failed to create user" };
@@ -69,10 +54,11 @@ const loginUser = async (email, password) => {
         return { message: "Invalid credentials" };
       }
       const user = rows[0];
-      return (user = {
+      return (userLogin = {
         username: user.username,
         email: user.email,
         id: user.id,
+        message: "User logged in successfully",
       });
     }
   } catch (error) {

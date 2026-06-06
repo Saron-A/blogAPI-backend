@@ -27,6 +27,10 @@ const CreatePost = async (title, content, userId) => {
         "INSERT INTO posts(title, content, userId) VALUES ($1, $2, $3)",
         [title, content, userId],
       );
+      return (newPost = {
+        message: "Post created successfully",
+        post: { title, content, userId },
+      });
     }
   } catch (err) {
     console.log(err.message("Error creating post"));
@@ -49,8 +53,9 @@ const getPostsByTitleOrContent = async (searchQuery) => {
   try {
     // const { searchQuery } = req.query;
     const { rows } = await pool.query(
-      "SELECT * FROM posts WHERE title ILIKE $1 OR body ILIKE $1",
-      [`%${searchQuery}`],
+      "SELECT posts.*, users.username FROM posts  JOIN users ON posts.userId = users.id       WHERE title ILIKE $1 OR body ILIKE $1"[
+        `%${searchQuery}`
+      ],
     );
     return rows;
   } catch (err) {
@@ -58,8 +63,25 @@ const getPostsByTitleOrContent = async (searchQuery) => {
   }
 };
 
+const getPostsByUsername = async (username) => {
+  try {
+    const { rows } = await pool.query(
+      "SELECT * FROM posts WHERE username = $1",
+      [username],
+    );
+    if (rows.length === 0) {
+      return { message: "No posts found for this username" };
+    } else {
+      return rows;
+    }
+  } catch (err) {
+    console.log(err.message("Error getting posts by username"));
+  }
+};
+
 module.exports = {
   CreatePost,
   getPostsByUserId,
   getPostsByTitleOrContent,
+  getPostsByUsername,
 };
