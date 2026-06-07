@@ -3,6 +3,8 @@ const express = require("express");
 const pool = require("./models/pool");
 const verifyToken = require("./Middleware/verifyToken");
 const jwt = require("jsonwebtoken");
+const path = require("node:path");
+
 const {
   createUserController,
   loginUserController,
@@ -34,6 +36,7 @@ const {
 const app = express();
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 /* ROUTES
 * Landing page
@@ -49,15 +52,15 @@ app.get("/", (req, res) => {
   res.json({ message: "Welcome to the API" });
 });
 
-app.get("/api/signup", (req, res) => {
-  return req.render("signupForm");
-});
+// app.get("/api/signup", (req, res) => {
+//   return req.render("signupForm");
+// });
 
 app.post("/api/signup", createUserController);
 
-app.get("/api/login", (req, res) => {
-  return req.render("loginForm");
-});
+// app.get("/api/login", (req, res) => {
+//   return req.render("loginForm");
+// });
 
 app.post("/api/login", verifyToken, loginUserController);
 
@@ -114,6 +117,12 @@ app.get("/API/profile", verifyToken, (req, res) => {
 });
 
 app.post("/api/logout", (req, res) => {});
+
+app.set("views", path.join(__dirname, "../src/views"));
+app.set("view engine", "ejs");
+
+const accessPath = path.join(__dirname, "Public");
+app.use(express.static(accessPath));
 
 // set up server listening
 app.listen(3000, () => {
