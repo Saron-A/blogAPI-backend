@@ -4,6 +4,7 @@ const pool = require("./models/pool");
 const verifyToken = require("./Middleware/verifyToken");
 const jwt = require("jsonwebtoken");
 const path = require("node:path");
+const cors = require("cors");
 
 const {
   createUserController,
@@ -35,6 +36,7 @@ const {
 
 const app = express();
 
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -98,7 +100,7 @@ app.get("/api/dashboard", verifyToken, async (req, res) => {
   });
 });
 
-app.get("/API/profile", verifyToken, (req, res) => {
+app.get("/api/profile", verifyToken, (req, res) => {
   jwt.verify(req.token, process.env.JWT_TOKEN, (err, authData) => {
     if (err) {
       return res
@@ -125,6 +127,6 @@ const accessPath = path.join(__dirname, "Public");
 app.use(express.static(accessPath));
 
 // set up server listening
-app.listen(3000, () => {
-  console.log("Server is running on port 3000");
+app.listen(process.env.PORT, () => {
+  console.log(`Server is running on port ${process.env.PORT}`);
 });

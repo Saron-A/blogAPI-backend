@@ -16,7 +16,7 @@ const createUserController = async (req, res) => {
   // check if password and confirm password match
   // hash password and  store in database
 
-  const newUser = await createUser(username, email, hashedPassword);
+  const newUser = await createUser(username, email, password, confirmPassword);
   if (newUser.message === "User created successfully") {
     jwt.sign(
       { newUser },
@@ -31,6 +31,7 @@ const createUserController = async (req, res) => {
     );
   } else {
     console.log(newUser.message);
+    return res.status(400).json({ message: newUser.message });
   }
 };
 

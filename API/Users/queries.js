@@ -16,27 +16,44 @@ const createUser = async (username, email, password, confirmPassword) => {
     const { rows } = await pool.query("SELECT * FROM users WHERE email = $1", [
       email,
     ]);
+
     if (rows.length > 0) {
       return { message: "User already exists" };
-    } else if (rows[0].username === username) {
-      return { message: "Username already exists, please choose another one" };
-    } else if (password !== confirmPassword) {
-      return { message: "Passwords do not match" };
-    } else {
-      const hashedPassword = await bcrypt.hash(password, 10);
-      const newUser = await createUser(username, email, hashedPassword);
-
-      await pool.query(
-        "INSERT INTO users (username, email, password) VALUES ($1, $2, $3)",
-        [username, email, hashedPassword],
-      );
-
-      return (newUser = {
-        message: "User created successfully",
-        user: { username, email },
-      });
     }
+
+    const { rows: usernameRows } = await pool.query(
+      "SELECT * FROM users WHERE username = $1",
+      [username],
+    );
+
+    if (usernameRows.length > 0) {
+      return {
+        message: "Username taken, choose a different one.",
+      };
+    }
+
+    if (password !== confirmPassword) {
+      return {
+        message: "Entered passwords don't match.",
+      };
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    await pool.query(
+      "INSERT INTO users (username, email, password) VALUES ($1, $2, $3)",
+      [username, email, hashedPassword],
+    );
+
+    return {
+      message: "User created successfully",
+      user: {
+        username,
+        email,
+      },
+    };
   } catch (error) {
+    console.error(error);
     return { message: "Server error, failed to create user" };
   }
 };
