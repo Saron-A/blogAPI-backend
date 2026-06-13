@@ -50,7 +50,7 @@ app.use(express.urlencoded({ extended: true }));
             - Search posts, users
 * Logout
 */
-app.get("/", (req, res) => {
+app.get("/api", (req, res) => {
   res.json({ message: "Welcome to the API" });
 });
 
@@ -64,7 +64,7 @@ app.post("/api/signup", createUserController);
 //   return req.render("loginForm");
 // });
 
-app.post("/api/login", verifyToken, loginUserController);
+app.post("/api/login", loginUserController);
 
 app.get("/api/dashboard", verifyToken, async (req, res) => {
   jwt.verify(req.token, process.env.JWT_SECRET, (err, authData) => {
@@ -120,7 +120,7 @@ app.get("/api/profile", verifyToken, (req, res) => {
 
 app.post("/api/logout", (req, res) => {});
 
-app.set("views", path.join(__dirname, "../src/views"));
+app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
 
 const accessPath = path.join(__dirname, "Public");

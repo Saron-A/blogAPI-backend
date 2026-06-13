@@ -18,17 +18,7 @@ const createUserController = async (req, res) => {
 
   const newUser = await createUser(username, email, password, confirmPassword);
   if (newUser.message === "User created successfully") {
-    jwt.sign(
-      { newUser },
-      process.env.JWT_SECRET,
-      { expiresIn: "48h" },
-      (err, token) => {
-        if (err) {
-          return { message: "Error generating token" };
-        }
-        return res.json({ token, user: { username, email } });
-      },
-    );
+    return res.json((user = { username, email }));
   } else {
     console.log(newUser.message);
     return res.status(400).json({ message: newUser.message });
@@ -37,13 +27,21 @@ const createUserController = async (req, res) => {
 
 const loginUserController = async (req, res) => {
   const { email, password } = req.body;
-  const { token } = req.token;
-  jwt.verify(token, process.env.JWT_SECRET, async (err, authData) => {
-    if (err) {
-      return res.status(403).json({ message: "Invalid token" });
-    }
-    const userLogin = await loginUser(email, password);
-  });
+  const userLogin = await loginUser(email, password);
+  if (userLogin.message === "User logged in successfully") {
+    const user = {
+      username: userLogin.username,
+      email: userLogin.email,
+      id: userLogin.id,
+    };
+
+    const token = jwt.sign({ user }, process.env.JWT_SECRET, {
+      expiresIn: "48h",
+    });
+    return res.json((data = { token, user }));
+  } else {
+    return res.status(400).json({ message: "Wrong Credentials" });
+  }
 };
 
 const getUserByIdController = async (req, res) => {
