@@ -67,54 +67,65 @@ app.post("/api/signup", createUserController);
 app.post("/api/login", loginUserController);
 
 app.get("/api/dashboard", verifyToken, async (req, res) => {
-  jwt.verify(req.token, process.env.JWT_SECRET, (err, authData) => {
-    if (err) {
-      res.sendStatus(403);
-    } else {
-      const { id } = req.params;
-      const posts = getPostsByUserId(id);
-      const userInfo = getUserById(id);
+  try {
+    jwt.verify(req.token, process.env.JWT_SECRET, async (err, authData) => {
+      if (err) {
+        return res.sendStatus(403);
+      }
+      // not from req.params but from the authData because data is stored in the authData
+      const userId = authData.user.id;
+      const posts = await getPostsByUserId(userId);
+      const userInfo = await getUserById(userId);
 
-      const filteredUserInfo = userInfo.map((info) => {
-        return {
-          username: info.username,
-          email: info.email,
-        };
-      });
+      // const filteredUserInfo = userInfo.map((info) => {
+      //   return {
+      //     id: info.id,
+      //     username: info.username,
+      //     email: info.email,
+      //   };
+      // }); - because only one user is present so we don't need to use map() function
 
-      const filteredPostsInfo = posts.map((post) => {
-        return {
-          title: post.title,
-          body: post.body,
-          time: post.createdAt,
-          isPublished: post.isPublished,
-          author: post.username,
-        };
-      });
+      const filteredUserInfo = {
+        username: userInfo.username,
+        email: userInfo.email,
+      };
 
-      return res.render("dashboard", {
-        posts: filteredPostsInfo,
-        user: filteredUserInfo,
-      });
-    }
-  });
+      const filteredPostsInfo = (posts || []).map((post) => ({
+        title: post.title,
+        body: post.body,
+        time: post.createdAt,
+        isPublished: post.isPublished,
+        author: post.username,
+      }));
+
+      return res.json(
+        (allInfo = {
+          posts: filteredPostsInfo,
+          user: filteredUserInfo,
+        }),
+      );
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Dashboard error." });
+  }
 });
 
-app.get("/api/profile", verifyToken, (req, res) => {
-  jwt.verify(req.token, process.env.JWT_TOKEN, (err, authData) => {
+app.get("/api/profile", verifyToken, async (req, res) => {
+  jwt.verify(req.token, process.env.JWT_SECRET, async (err, authData) => {
     if (err) {
       return res
-        .statusCode(403)
+        .status(403)
         .send({ message: "Please login to view your profile." });
-    } else {
-      const { id } = req.params;
-      const user = getUserById(id);
-      const filteredUserInfo = user.map((info) => {
-        return { username: info.username, email: info.email };
-      });
-
-      return res.render("profile", filteredUserInfo);
     }
+    const id = authData.user.id;
+    const userInfo = await getUserById(id);
+    const filteredUserInfo = {
+      username: userInfo.username,
+      email: userInfo.email,
+    };
+
+    return res.json(filteredUserInfo);
   });
 });
 
