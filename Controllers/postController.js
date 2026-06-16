@@ -9,13 +9,20 @@ const {
 } = require("../API/Posts/queries");
 
 const createPostController = async (req, res) => {
-  const { title, content, userId } = req.body;
-  const newPost = await CreatePost(title, content, userId);
-  if (newPost.message === "Post created successfully") {
-    res.status(201).json(newPost);
-  } else {
-    res.status(400).json(newPost);
-  }
+  jwt.verify(req.token, process.env.JWT_SECRET, async (err, authData) => {
+    if (err) {
+      return res.status(403);
+    }
+    const userId = authData.user.id;
+    const { title, body } = req.body;
+
+    const newPost = await CreatePost(title, body, userId);
+    if (newPost.message === "Post created successfully") {
+      res.status(201).json(newPost);
+    } else {
+      res.status(400).json(newPost.message);
+    }
+  });
 };
 
 const getPostsByUserIdController = async (req, res) => {

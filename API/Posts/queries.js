@@ -33,13 +33,25 @@ const CreatePost = async (title, content, userId) => {
       });
     }
   } catch (err) {
-    console.log(err.message("Error creating post"));
+    console.log("Error creating post:", err.message);
+  }
+};
+
+const getAllPosts = async () => {
+  try {
+    // need to include author's username as well for integrity
+    const { rows: allPosts } = await pool.query(
+      "SELECT posts.*, users.username FROM posts JOIN users ON posts.userId = users.id WHERE posts.isPublished = 'true'",
+    );
+    return allPosts;
+  } catch (err) {
+    console.error(err);
+    return []; // fallback array so it won't return undefined
   }
 };
 
 const getPostsByUserId = async (userId) => {
   try {
-    // displayed on the dashboard - should include their own posts and published posts from others - edit the query to handle that as well.
     const { rows } = await pool.query(
       `SELECT posts.* , users.username FROM posts JOIN users ON posts."userId" = users.id WHERE posts."userId" = $1`,
       [userId],
@@ -85,6 +97,7 @@ const getPostsByUsername = async (username) => {
 
 module.exports = {
   CreatePost,
+  getAllPosts,
   getPostsByUserId,
   getPostsByTitleOrContent,
   getPostsByUsername,

@@ -22,6 +22,7 @@ const {
 
 const {
   CreatePost,
+  getAllPosts,
   getPostsByUserId,
   getPostsByTitleOrContent,
   getPostsByUsername,
@@ -66,7 +67,7 @@ app.post("/api/signup", createUserController);
 
 app.post("/api/login", loginUserController);
 
-app.get("/api/dashboard", verifyToken, async (req, res) => {
+app.get("/api/dashboardA", verifyToken, async (req, res) => {
   try {
     jwt.verify(req.token, process.env.JWT_SECRET, async (err, authData) => {
       if (err) {
@@ -111,6 +112,31 @@ app.get("/api/dashboard", verifyToken, async (req, res) => {
   }
 });
 
+app.get("/api/dashboardV", verifyToken, async (req, res) => {
+  try {
+    jwt.verify(req.token, process.env.JWT_SECRET, async (err, authData) => {
+      if (err) {
+        return res.status(403);
+      }
+      const user = {
+        username: authData.user.username,
+        email: authData.user.email,
+      };
+      const myPosts = await getAllPosts(); // return array of posts
+      const filteredPosts = myPosts.map((myPost) => ({
+        title: myPost.title,
+        body: myPost.body,
+        time: myPost.created_at,
+        author: myPost.username,
+      }));
+      return res.json({ posts: filteredPosts, user: user });
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Dashboard Error." });
+  }
+});
+
 app.get("/api/profile", verifyToken, async (req, res) => {
   jwt.verify(req.token, process.env.JWT_SECRET, async (err, authData) => {
     if (err) {
@@ -128,6 +154,30 @@ app.get("/api/profile", verifyToken, async (req, res) => {
     return res.json(filteredUserInfo);
   });
 });
+
+app.get("/api/posts", verifyToken, async (req, res) => {
+  jwt.verify(req.token, process.env.JWT_SECRET, async (err, authData) => {
+    if (err) {
+      return res
+        .status(403)
+        .json({ message: "Please login to view your posts." });
+    }
+    const id = authData.user.id;
+    const userPosts = await getPostsByUserId(id);
+    // returns array of posts
+    const filteredPosts = userPosts.map((userPost) => ({
+      title: userPost.title,
+      author: userPost.username,
+      time: userPost.created_at,
+      isPublished: userPost.isPublished,
+      body: userPost.body,
+    }));
+
+    return res.json(filteredPosts);
+  });
+});
+
+app.post("/api/posts", verifyToken, createPostController);
 
 app.post("/api/logout", (req, res) => {});
 
