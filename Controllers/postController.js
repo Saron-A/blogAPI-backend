@@ -4,8 +4,9 @@ const jwt = require("jsonwebtoken");
 const {
   CreatePost,
   getPostsByUserId,
-  getPostsByTitleOrContent,
+  getPostsByTitleOrBody,
   getPostsByUsername,
+  publishPost,
 } = require("../API/Posts/queries");
 
 const createPostController = async (req, res) => {
@@ -41,7 +42,7 @@ const getPostsByTitleOrContentController = async (req, res) => {
         title: result.title,
         body: result.body,
         author: result.username,
-        date: result.createdAt,
+        time: result.created_at,
       };
     });
   }
@@ -66,9 +67,27 @@ const getPostsByUsernameController = async (req, res) => {
   }
 };
 
+const publishPostController = async (req, res) => {
+  try {
+    const { postId } = req.params;
+    const post = await publishPost(postId);
+    // returns message
+    if (post.message === "Post Published") {
+      return res.json(post);
+    }
+    return res.status(400).json(result);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({
+      message: "Failed to publish post",
+    });
+  }
+};
+
 module.exports = {
   createPostController,
   getPostsByUserIdController,
   getPostsByTitleOrContentController,
   getPostsByUsernameController,
+  publishPostController,
 };

@@ -18,6 +18,7 @@ const {
   getPostsByUserIdController,
   getPostsByTitleOrContentController,
   getPostsByUsernameController,
+  publishPostController,
 } = require("./Controllers/postController");
 
 const {
@@ -92,10 +93,11 @@ app.get("/api/dashboardA", verifyToken, async (req, res) => {
       };
 
       const filteredPostsInfo = (posts || []).map((post) => ({
+        id: post.id,
         title: post.title,
         body: post.body,
-        time: post.createdAt,
-        isPublished: post.isPublished,
+        time: post.created_at,
+        is_published: post.is_published,
         author: post.username,
       }));
 
@@ -178,6 +180,9 @@ app.get("/api/posts", verifyToken, async (req, res) => {
 });
 
 app.post("/api/posts", verifyToken, createPostController);
+
+//get post by id and edit info
+app.put("/api/posts/:postId/publish", verifyToken, publishPostController);
 
 app.post("/api/logout", (req, res) => {});
 
