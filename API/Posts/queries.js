@@ -53,7 +53,7 @@ const getAllPosts = async () => {
 const getPostsByUserId = async (user_id) => {
   try {
     const { rows } = await pool.query(
-      `SELECT posts.* , users.username FROM posts JOIN users ON posts."user_id" = users.id WHERE posts."user_id" = $1`,
+      `SELECT posts.* , users.username FROM posts JOIN users ON posts.user_id = users.id WHERE posts.user_id = $1`,
       [user_id],
     );
     return rows;

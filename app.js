@@ -124,7 +124,7 @@ app.get("/api/dashboardV", verifyToken, async (req, res) => {
         username: authData.user.username,
         email: authData.user.email,
       };
-      const myPosts = await getAllPosts(); // return array of posts
+      const myPosts = await getAllPosts(); // return array of published posts
       const filteredPosts = myPosts.map((myPost) => ({
         title: myPost.title,
         body: myPost.body,
@@ -171,7 +171,7 @@ app.get("/api/posts", verifyToken, async (req, res) => {
       title: userPost.title,
       author: userPost.username,
       time: userPost.created_at,
-      isPublished: userPost.isPublished,
+      is_published: userPost.is_published,
       body: userPost.body,
     }));
 
