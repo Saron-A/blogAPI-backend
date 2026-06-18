@@ -50,6 +50,17 @@ const getAllPosts = async () => {
   }
 };
 
+const getPostById = async (id) => {
+  try {
+    const { rows } = await pool.query("SELECT * FROM posts WHERE id = $1", [
+      id,
+    ]);
+    return rows[0]; // returns the first row
+  } catch (err) {
+    console.error("Error fetching post", err.message);
+  }
+};
+
 const getPostsByUserId = async (user_id) => {
   try {
     const { rows } = await pool.query(
@@ -111,6 +122,7 @@ const publishPost = async (post_id) => {
 module.exports = {
   CreatePost,
   getAllPosts,
+  getPostById,
   getPostsByUserId,
   getPostsByTitleOrBody,
   getPostsByUsername,

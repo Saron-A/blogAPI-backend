@@ -25,7 +25,8 @@ const {
   CreatePost,
   getAllPosts,
   getPostsByUserId,
-  getPostsByTitleOrContent,
+  getPostById,
+  getPostsByTitleOrBody,
   getPostsByUsername,
 } = require("./API/Posts/queries");
 
@@ -126,6 +127,7 @@ app.get("/api/dashboardV", verifyToken, async (req, res) => {
       };
       const myPosts = await getAllPosts(); // return array of published posts
       const filteredPosts = myPosts.map((myPost) => ({
+        id: myPost.id,
         title: myPost.title,
         body: myPost.body,
         time: myPost.created_at,
@@ -168,6 +170,7 @@ app.get("/api/posts", verifyToken, async (req, res) => {
     const userPosts = await getPostsByUserId(id);
     // returns array of posts
     const filteredPosts = userPosts.map((userPost) => ({
+      id: userPost.id,
       title: userPost.title,
       author: userPost.username,
       time: userPost.created_at,
@@ -183,6 +186,26 @@ app.post("/api/posts", verifyToken, createPostController);
 
 //get post by id and edit info
 app.put("/api/posts/:postId/publish", verifyToken, publishPostController);
+
+app.get("/api/posts/:postId", verifyToken, async (req, res) => {
+  jwt.verify(req.token, process.env.JWT_SECRET, async (err, authData) => {
+    if (err) {
+      res.status(403);
+    }
+
+    const { postId } = req.params;
+    const post = await getPostById(postId); // gets an object
+    if (!post) {
+      return res.status(404).json({ message: "Post not Found" });
+    }
+
+    const user = {
+      username: authData.user.username,
+      email: authData.user.email,
+    };
+    return res.status(200).json({ post, user });
+  });
+});
 
 app.post("/api/logout", (req, res) => {});
 
