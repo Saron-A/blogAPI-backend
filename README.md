@@ -14,7 +14,7 @@ It provides authentication, authorization, database management, user management,
 
 Repository:
 
-`[VIEWER_FRONTEND_REPOSITORY_URL]`
+`https://github.com/Saron-A/blogAPI-Viewer_Frontend`
 
 Allows users to browse and read published blog posts.
 
@@ -22,7 +22,7 @@ Allows users to browse and read published blog posts.
 
 Repository:
 
-`[AUTHOR_FRONTEND_REPOSITORY_URL]`
+`https://github.com/Saron-A/blogAPI-Author_Frontend`
 
 Allows users to create and manage blog content.
 
