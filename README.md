@@ -158,7 +158,7 @@ PORT=5000
 Clone repository:
 
 ```bash
-git clone <BACKEND_REPOSITORY_URL>
+git clone https://github.com/Saron-A/blogAPI-backend
 ```
 
 Install dependencies:
