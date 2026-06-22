@@ -41,13 +41,14 @@ const createUser = async (username, email, password, confirmPassword) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     await pool.query(
-      "INSERT INTO users (username, email, password) VALUES ($1, $2, $3)",
+      "INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING *",
       [username, email, hashedPassword],
     );
 
     return {
       message: "User created successfully",
       user: {
+        id,
         username,
         email,
       },

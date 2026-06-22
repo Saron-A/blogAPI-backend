@@ -37,11 +37,26 @@ const CreatePost = async (title, body, user_id) => {
   }
 };
 // update the post related queries to account for likes
-const getAllPosts = async () => {
+const getAllPosts = async (user_id) => {
   try {
-    // need to include author's username as well for integrity
+    // need to include author's username as well for integrity\
+    // edit the query to make sure the like.user_id is same as the current user while the rest match the authors of each post
     const { rows: allPosts } = await pool.query(
-      "SELECT posts.* , users.username, likes.id AS like_id FROM posts JOIN users on posts.user_id = users.id LEFT JOIN likes ON likes.user_id = users.id AND likes.post_id = posts.id WHERE posts.is_published = 'true'",
+      `SELECT DISTINCT ON (posts.id)
+  posts.id,
+  posts.title,
+  posts.body,
+  posts.created_at,
+  users.username,
+  likes.id AS like_id
+FROM posts
+JOIN users ON posts.user_id = users.id
+LEFT JOIN likes 
+  ON likes.post_id = posts.id 
+  AND likes.user_id = $1
+WHERE posts.is_published = true
+ORDER BY posts.id, likes.id DESC;`,
+      [user_id],
     );
     return allPosts;
   } catch (err) {
@@ -50,11 +65,12 @@ const getAllPosts = async () => {
   }
 };
 
-const getPostById = async (id) => {
+const getPostById = async (user_id, post_id) => {
   try {
     const { rows } = await pool.query(
-      "SELECT posts.*, likes.id AS like_id FROM posts LEFT JOIN likes ON posts.id = likes.post_id WHERE posts.id = $1",
-      [id],
+      `SELECT posts.*,likes.id AS like_id FROM posts
+LEFT JOIN likes   ON likes.post_id = posts.id AND likes.user_id = $1 WHERE posts.id = $2`,
+      [user_id, post_id],
     );
 
     return rows[0]; // returns the first row

@@ -130,12 +130,14 @@ app.get("/api/dashboardV", verifyToken, async (req, res) => {
         email: authData.user.email,
       };
       const myPosts = await getAllPosts(); // return array of published posts
+      console.log(myPosts);
       const filteredPosts = myPosts.map((myPost) => ({
         id: myPost.id,
         title: myPost.title,
         body: myPost.body,
         time: myPost.created_at,
         author: myPost.username,
+        like_id: myPost.like_id,
       }));
       return res.json({ posts: filteredPosts, user: user });
     });
@@ -197,13 +199,16 @@ app.get("/api/posts/:postId", verifyToken, async (req, res) => {
       res.status(403);
     }
 
+    const user_id = authData.user.id;
     const { postId } = req.params;
-    const post = await getPostById(postId); // gets an object
+    const post = await getPostById(user_id, postId); // gets an object
+
     if (!post) {
       return res.status(404).json({ message: "Post not Found" });
     }
 
     const user = {
+      user_id: req.user,
       username: authData.user.username,
       email: authData.user.email,
     };
