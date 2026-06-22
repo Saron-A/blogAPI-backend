@@ -43,7 +43,6 @@ const getPostsByTitleOrContentController = async (req, res) => {
         body: result.body,
         author: result.username,
         time: result.created_at,
-        like: result.like_id,
       };
     });
   }

@@ -80,6 +80,7 @@ app.get("/api/dashboardA", verifyToken, async (req, res) => {
       // not from req.params but from the authData because data is stored in the authData
       const userId = authData.user.id;
       const posts = await getPostsByUserId(userId);
+      console.log(posts);
       const userInfo = await getUserById(userId);
 
       // const filteredUserInfo = userInfo.map((info) => {
@@ -102,6 +103,7 @@ app.get("/api/dashboardA", verifyToken, async (req, res) => {
         time: post.created_at,
         is_published: post.is_published,
         author: post.username,
+        like_id: post.like_id,
       }));
 
       return res.json(

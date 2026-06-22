@@ -36,12 +36,12 @@ const CreatePost = async (title, body, user_id) => {
     console.log("Error creating post:", err.message);
   }
 };
-
+// update the post related queries to account for likes
 const getAllPosts = async () => {
   try {
     // need to include author's username as well for integrity
     const { rows: allPosts } = await pool.query(
-      "SELECT posts.*, users.username FROM posts JOIN users ON posts.user_id = users.id WHERE posts.is_published = 'true'",
+      "SELECT posts.* , users.username, likes.id AS like_id FROM posts JOIN users on posts.user_id = users.id LEFT JOIN likes ON likes.user_id = users.id AND likes.post_id = posts.id WHERE posts.is_published = 'true'",
     );
     return allPosts;
   } catch (err) {
@@ -52,9 +52,11 @@ const getAllPosts = async () => {
 
 const getPostById = async (id) => {
   try {
-    const { rows } = await pool.query("SELECT * FROM posts WHERE id = $1", [
-      id,
-    ]);
+    const { rows } = await pool.query(
+      "SELECT posts.*, likes.id AS like_id FROM posts LEFT JOIN likes ON posts.id = likes.post_id WHERE posts.id = $1",
+      [id],
+    );
+
     return rows[0]; // returns the first row
   } catch (err) {
     console.error("Error fetching post", err.message);
@@ -63,8 +65,9 @@ const getPostById = async (id) => {
 
 const getPostsByUserId = async (user_id) => {
   try {
+    // to avoid mixup between posts.id and likes.id
     const { rows } = await pool.query(
-      `SELECT posts.* , users.username FROM posts JOIN users ON posts.user_id = users.id WHERE posts.user_id = $1`,
+      `SELECT posts.* , users.username, likes.id AS like_id FROM posts JOIN users on posts.user_id = users.id LEFT JOIN likes ON likes.user_id = users.id AND likes.post_id = posts.id WHERE posts.user_id = $1`,
       [user_id],
     );
     return rows;
@@ -79,7 +82,7 @@ const getPostsByTitleOrBody = async (searchQuery) => {
   try {
     // const { searchQuery } = req.query;
     const { rows } = await pool.query(
-      "SELECT posts.*, users.username FROM posts  JOIN users ON posts.user_id = users.id       WHERE posts.title ILIKE $1 OR posts.body ILIKE $1"[
+      "SELECT posts.* , users.username, likes.id FROM posts JOIN users on posts.user_id = users.id LEFT JOIN likes ON likes.user_id = users.id AND likes.post_id = posts.id WHERE posts.title ILIKE $1 OR posts.body ILIKE $1"[
         `%${searchQuery}`
       ],
     );
@@ -92,7 +95,7 @@ const getPostsByTitleOrBody = async (searchQuery) => {
 const getPostsByUsername = async (username) => {
   try {
     const { rows } = await pool.query(
-      "SELECT posts.* , users.username FROM posts JOIN users ON posts.user_id = users.id WHERE users.username = $1,"[
+      "SELECT posts.* , users.username, likes.id FROM posts JOIN users on posts.user_id = users.id JOIN likes ON likes.user_id = users.id AND likes.post_id = posts.id WHERE users.username = $1,"[
         username
       ],
     );

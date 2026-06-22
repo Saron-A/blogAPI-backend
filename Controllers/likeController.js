@@ -6,10 +6,12 @@ const likePostController = async (req, res) => {
   const user_id = req.user.id;
   try {
     const like = await likePost(user_id, postId);
+
     if (!like) {
       return res.status(500).json({ message: "Unable to like post." });
     }
     return res.json(like); // should return id, user_id and post_id
+    // should return the updated post object with the liked status
   } catch (err) {
     console.error("Error liking post", err.message);
   }
