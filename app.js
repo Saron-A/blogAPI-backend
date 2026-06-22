@@ -37,6 +37,8 @@ const {
   getAllUsers,
 } = require("./API/Users/queries");
 
+const { likePostController } = require("./Controllers/likeController");
+
 const app = express();
 
 app.use(cors());
@@ -206,6 +208,8 @@ app.get("/api/posts/:postId", verifyToken, async (req, res) => {
     return res.status(200).json({ post, user });
   });
 });
+
+app.post("/api/posts/:postId/like", verifyToken, likePostController);
 
 app.post("/api/logout", (req, res) => {});
 

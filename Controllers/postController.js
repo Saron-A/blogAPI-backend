@@ -43,6 +43,7 @@ const getPostsByTitleOrContentController = async (req, res) => {
         body: result.body,
         author: result.username,
         time: result.created_at,
+        like: result.like_id,
       };
     });
   }
@@ -58,6 +59,7 @@ const getPostsByUsernameController = async (req, res) => {
     //we can filter out only the title and content of the posts and return that to the client
     const filteredPosts = posts.map((post) => {
       return {
+        id: post.id,
         title: post.title,
         body: post.body,
         username: username,
